@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.10)
+project(raytracer CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+endif()
+
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+find_package(SFML 2.5 COMPONENTS system window graphics REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBCONFIG REQUIRED IMPORTED_TARGET libconfig++)
+
+add_executable(raytracer ${SOURCES})
+
+target_include_directories(raytracer PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${SFML_INCLUDE_DIR}
+    ${LIBCONFIG_INCLUDE_DIRS}
+)
+
+target_link_libraries(raytracer PRIVATE 
+    sfml-system 
+    sfml-window 
+    sfml-graphics 
+    PkgConfig::LIBCONFIG
+)
+
+add_custom_command(
+    TARGET raytracer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/plugins
+)
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/scenes)
+    add_custom_command(
+        TARGET raytracer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/scenes ${CMAKE_BINARY_DIR}/scenes
+    )
+endif()
+
+message(STATUS "SFML include dir: ${SFML_INCLUDE_DIR}")
+message(STATUS "SFML libraries: ${SFML_LIBRARIES}")
+message(STATUS "Libconfig++ include dirs: ${LIBCONFIG_INCLUDE_DIRS}")
+message(STATUS "Libconfig++ libraries: ${LIBCONFIG_LIBRARIES}")
+
+install(TARGETS raytracer DESTINATION bin)
