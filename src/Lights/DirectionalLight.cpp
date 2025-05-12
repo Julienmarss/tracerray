@@ -11,7 +11,8 @@ RayTracer::DirectionalLight::DirectionalLight(const Vector3D &direction, double 
 
 RayTracer::Vector3D RayTracer::DirectionalLight::getDirection(const Vector3D &point) const {
     (void)point;
-    return direction * -1;
+    Vector3D lightDir = -direction.normalize();
+    return lightDir;
 }
 
 double RayTracer::DirectionalLight::getIntensity(const Vector3D &point) const {

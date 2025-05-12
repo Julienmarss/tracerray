@@ -51,8 +51,6 @@ RayTracer::Color RayTracer::operator*(double scalar, const Color &c) {
     return c * scalar;
 }
 
-// Définition des couleurs constantes
-// Utilisation explicite du constructeur uint8_t pour éviter l'ambiguïté
 const RayTracer::Color RayTracer::Colors::BLACK(static_cast<uint8_t>(0), static_cast<uint8_t>(0), static_cast<uint8_t>(0));
 const RayTracer::Color RayTracer::Colors::WHITE(static_cast<uint8_t>(255), static_cast<uint8_t>(255), static_cast<uint8_t>(255));
 const RayTracer::Color RayTracer::Colors::RED(static_cast<uint8_t>(255), static_cast<uint8_t>(0), static_cast<uint8_t>(0));

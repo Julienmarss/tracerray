@@ -9,29 +9,28 @@ RayTracer::Sphere::Sphere(const Vector3D &center, double radius, const Material 
 std::optional<RayTracer::HitInfo> RayTracer::Sphere::intersect(const Ray &ray, double minDist, double maxDist) const {
     Vector3D oc = ray.getOrigin() - center;
     
-    double a = 1.0;
-    double half_b = oc.dot(ray.getDirection());
-    double c = oc.lengthSquared() - radius * radius;
-    double discriminant = half_b * half_b - a * c;
+    double a = ray.getDirection().dot(ray.getDirection());
+    double b = 2.0 * oc.dot(ray.getDirection());
+    double c = oc.dot(oc) - radius*radius;
     
+    double discriminant = b*b - 4*a*c;
     if (discriminant < 0) {
         return std::nullopt;
     }
     
-    double sqrtd = std::sqrt(discriminant);
-    
-    double root = -half_b - sqrtd;
-    if (root < minDist || root > maxDist) {
-        root = -half_b + sqrtd;
-        if (root < minDist || root > maxDist) {
+    double t = (-b - sqrt(discriminant)) / (2.0*a);
+    if (t < minDist || t > maxDist) {
+        t = (-b + sqrt(discriminant)) / (2.0*a);
+        if (t < minDist || t > maxDist) {
             return std::nullopt;
         }
     }
     
     RayTracer::HitInfo hitInfo;
-    hitInfo.distance = root;
-    hitInfo.point = ray.pointAt(root);
-    hitInfo.normal = (hitInfo.point - center) / radius;
+    hitInfo.distance = t;
+    hitInfo.point = ray.pointAt(t);
+    Vector3D outNormal = (hitInfo.point - center) / radius;
+    hitInfo.normal = outNormal.normalize();
     hitInfo.material = material;
     return hitInfo;
 }

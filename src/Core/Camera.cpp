@@ -54,38 +54,19 @@ void RayTracer::Camera::setResolution(int width, int height) {
     this->height = height;
 }
 
-// Simplified from "Ray Tracing in One Weekend"
 RayTracer::Ray RayTracer::Camera::generateRay(int x, int y) const {
-    // Debug
-    // std::cout << "Debug: Generating ray for pixel (" << x << ", " << y << ")" << std::endl;
-    
-    // Calculate viewport dimensions based on FOV
     double aspect_ratio = static_cast<double>(width) / height;
-    double theta = fieldOfView * M_PI / 180.0;  // Convert FOV to radians
+    double theta = fieldOfView * M_PI / 180.0;
     double viewport_height = 2.0 * tan(theta / 2.0);
     double viewport_width = aspect_ratio * viewport_height;
+    Vector3D lookDir(0, 1, 0);
+    Vector3D right(1, 0, 0);
+    Vector3D up(0, 0, 1);
+    double u = static_cast<double>(x) / (width - 1);
+    double v = 1.0 - static_cast<double>(y) / (height - 1);
+    Vector3D direction = lookDir + 
+                        (u - 0.5) * viewport_width * right + 
+                        (v - 0.5) * viewport_height * up;
     
-    // Define camera basis vectors (simplified - not using rotation angles yet)
-    Vector3D w(0, 1, 0);  // Forward - pointing in +Y direction (for basic setup)
-    Vector3D u(1, 0, 0);  // Right - pointing in +X direction
-    Vector3D v(0, 0, 1);  // Up - pointing in +Z direction
-    
-    // Map pixel coordinates to viewport coordinates
-    // Pixel (0,0) is top-left, but we want to map it to bottom-left of viewport
-    double s = static_cast<double>(x) / (width - 1);
-    double t = 1.0 - static_cast<double>(y) / (height - 1);  // Invert Y
-    
-    // Calculate direction vector
-    double px = viewport_width * (s - 0.5);
-    double py = 1.0;  // Fixed distance to viewport
-    double pz = viewport_height * (t - 0.5);
-    
-    Vector3D direction = u * px + w * py + v * pz;
-    
-    // Debug
-    // std::cout << "Debug: Ray direction: (" << direction.getX() << ", " 
-    //          << direction.getY() << ", " << direction.getZ() << ")" << std::endl;
-    
-    // Create and return ray
     return Ray(position, direction.normalize());
 }

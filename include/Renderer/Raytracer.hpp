@@ -5,6 +5,8 @@
 #include "../Interfaces/IObserver.hpp"
 #include <vector>
 #include <atomic>
+#include <mutex>
+#include <thread>
 
 namespace RayTracer {
 
@@ -17,6 +19,7 @@ public:
     void removeObserver(IObserver *observer);
     void cancel();
     float getProgress() const;
+    void setNumThreads(unsigned int num);
     
 private:
     Color traceRay(const Ray &ray, const Scene &scene, int depth = 0) const;
@@ -27,7 +30,10 @@ private:
     std::vector<IObserver*> observers;
     std::atomic<float> progress;
     std::atomic<bool> cancelRequested;
-    
+
+    unsigned int numThreads;
+    std::mutex progressMutex;
+
     static constexpr int MAX_DEPTH = 5;
     static constexpr double MIN_DIST = 0.001;
     static constexpr double MAX_DIST = 1000.0;

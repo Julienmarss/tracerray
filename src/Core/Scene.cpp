@@ -35,23 +35,17 @@ void RayTracer::Scene::setCamera(const Camera &camera) {
 std::optional<RayTracer::HitInfo> RayTracer::Scene::intersect(const Ray &ray, double minDist, double maxDist) const {
     std::optional<HitInfo> closestHit;
     double closestDistance = maxDist;
-    
-    std::cout << "Debug: Testing intersection with " << primitives.size() << " primitives" << std::endl;
-    
-    // Check intersection with each primitive
-    int index = 0;
+
     for (const auto &primitive : primitives) {
-        std::cout << "Debug: Testing primitive " << index++ << std::endl;
         auto hit = primitive->intersect(ray, minDist, closestDistance);
         if (hit) {
-            // If we got a hit, record it as the closest so far
             closestDistance = hit->distance;
             closestHit = hit;
-            std::cout << "Debug: Found hit at distance " << hit->distance 
+/*             std::cout << "Debug: Found hit at distance " << hit->distance 
                      << " with material color RGB(" 
                      << (int)hit->material.getColor().getR() << ","
                      << (int)hit->material.getColor().getG() << ","
-                     << (int)hit->material.getColor().getB() << ")" << std::endl;
+                     << (int)hit->material.getColor().getB() << ")" << std::endl; */
         }
     }
     

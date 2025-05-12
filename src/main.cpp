@@ -2,6 +2,7 @@
 #include "../include/Parser/SceneParser.hpp"
 #include "../include/Renderer/Raytracer.hpp"
 #include "../include/Renderer/PPMWriter.hpp"
+#include "../include/Renderer/ProgressObserver.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -36,7 +37,11 @@ int main(int argc, char* argv[]) {
     }
     
     RayTracer::Raytracer raytracer;
+    RayTracer::ProgressObserver progressObserver("Rendering");
+    raytracer.registerObserver(&progressObserver);
     auto startTime = std::chrono::high_resolution_clock::now();
+    std::cout << "Rendering scene with " << std::thread::hardware_concurrency() 
+    << " threads..." << std::endl;
     std::cout << "Rendering scene..." << std::endl;
     std::vector<RayTracer::Color> renderedImage = raytracer.render(scene);
     auto endTime = std::chrono::high_resolution_clock::now();
