@@ -28,6 +28,6 @@ private:
     static Vector3D axisToNormal(char axis);
 };
 
-} // namespace RayTracer
+}
 
 #endif // PLANE_HPP_

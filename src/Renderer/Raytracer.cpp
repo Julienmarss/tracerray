@@ -16,23 +16,31 @@ std::vector<RayTracer::Color> RayTracer::Raytracer::render(const Scene &scene) {
     cancelRequested = false;
     int totalPixels = width * height;
     std::atomic<int> pixelsDone(0);
-    
     const int TILE_SIZE = 32;
     int numTilesX = (width + TILE_SIZE - 1) / TILE_SIZE;
     int numTilesY = (height + TILE_SIZE - 1) / TILE_SIZE;
     int totalTiles = numTilesX * numTilesY;
     std::atomic<int> nextTileIndex(0);
     
+    std::cout << "\n=== Raytracer Render Start ===" << std::endl;
+    std::cout << "Resolution: " << width << "x" << height << " (" << totalPixels << " pixels)" << std::endl;
+    std::cout << "Tiles: " << numTilesX << "x" << numTilesY << " (" << totalTiles << " tiles of " << TILE_SIZE << "x" << TILE_SIZE << ")" << std::endl;
+    std::cout << "Threads: " << numThreads << std::endl;
+    std::cout << "===========================\n" << std::endl;
+    
     auto renderTiles = [&]() {
+        std::thread::id threadId = std::this_thread::get_id();
+        std::cout << "Thread " << threadId << " started" << std::endl;
+        int tilesProcessed = 0;
+        
         while (true) {
             int tileIndex = nextTileIndex.fetch_add(1);
             if (tileIndex >= totalTiles || cancelRequested) {
+                std::cout << "Thread " << threadId << " finished (processed " << tilesProcessed << " tiles)" << std::endl;
                 break;
             }
-            
             int tileY = tileIndex / numTilesX;
             int tileX = tileIndex % numTilesX;
-            
             int startX = tileX * TILE_SIZE;
             int startY = tileY * TILE_SIZE;
             int endX = std::min(startX + TILE_SIZE, width);
@@ -43,36 +51,39 @@ std::vector<RayTracer::Color> RayTracer::Raytracer::render(const Scene &scene) {
                     Ray ray = camera.generateRay(x, y);
                     Color color = traceRay(ray, scene);
                     image[y * width + x] = color;
-                    
-                    int done = ++pixelsDone;
-                    float newProgress = static_cast<float>(done) / totalPixels;
-                    
-                    if (newProgress - progress >= 0.01f) {
-                        std::lock_guard<std::mutex> lock(progressMutex);
-                        if (newProgress - progress >= 0.01f) {
-                            progress = newProgress;
-                            notifyObservers(progress);
-                        }
-                    }
+                }
+            }
+            tilesProcessed++;
+            int done = pixelsDone.fetch_add((endX - startX) * (endY - startY));
+            float newProgress = static_cast<float>(done) / totalPixels;
+            if (newProgress - progress >= 0.005f) {
+                std::lock_guard<std::mutex> lock(progressMutex);
+                if (newProgress - progress >= 0.005f) {
+                    progress = newProgress;
+                    notifyObservers(progress);
                 }
             }
         }
     };
-    
+    std::cout << "Starting " << numThreads << " rendering threads..." << std::endl;
+    auto startTime = std::chrono::high_resolution_clock::now();
     std::vector<std::thread> threads;
     for (unsigned int i = 0; i < numThreads; ++i) {
         threads.push_back(std::thread(renderTiles));
     }
-    
     for (auto &thread : threads) {
         thread.join();
     }
-    
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     if (progress < 1.0f) {
         progress = 1.0f;
         notifyObservers(progress);
     }
-    
+    std::cout << "\nAll threads completed" << std::endl;
+    std::cout << "Render time: " << duration / 1000.0 << " seconds" << std::endl;
+    std::cout << "Average speed: " << (totalPixels * 1000) / duration << " pixels/second" << std::endl;
+    std::cout << "===============================" << std::endl;
     return image;
 }
 

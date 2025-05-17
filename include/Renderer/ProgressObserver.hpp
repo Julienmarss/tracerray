@@ -4,6 +4,7 @@
 #include "../Interfaces/IObserver.hpp"
 #include <iostream>
 #include <string>
+#include <chrono>
 
 namespace RayTracer {
 
@@ -17,6 +18,7 @@ public:
 private:
     std::string name;
     float lastProgress;
+    std::chrono::high_resolution_clock::time_point startTime;
 };
 
 }

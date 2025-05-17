@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2025
+** B-OOP-400-LIL-4-1-raytracer-yanis.asselman
+** File description:
+** SceneParser
+*/
+
 #ifndef SCENE_PARSER_HPP_
 #define SCENE_PARSER_HPP_
 
@@ -12,6 +19,7 @@ public:
     SceneParser();
     
     bool parseFile(const std::string &filename, Scene &scene);
+    bool parsePluginPrimitives(const libconfig::Setting &config, Scene &scene);
     
 private:
     bool parseCamera(const libconfig::Setting &config, Scene &scene);
